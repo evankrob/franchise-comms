@@ -100,7 +100,7 @@ export async function POST(
       );
     }
 
-    const post = postResult;
+    const post = postResult as any;
 
     // Create or update read receipt using upsert for idempotent behavior
     const readReceiptRecord = {
@@ -113,14 +113,12 @@ export async function POST(
     let upsertError = null;
 
     try {
-      if (supabase.from) {
-        const result = await supabase
-          .from('read_receipts')
-          .upsert(readReceiptRecord)
-          .select();
-        
-        upsertError = result.error;
-      }
+      const result = await (supabase as any)
+        .from('read_receipts')
+        .upsert(readReceiptRecord)
+        .select();
+      
+      upsertError = result.error;
     } catch (err) {
       upsertError = err;
     }

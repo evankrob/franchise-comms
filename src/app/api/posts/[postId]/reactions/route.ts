@@ -161,7 +161,7 @@ export async function POST(
       );
     }
 
-    const post = postResult;
+    const post = postResult as any;
 
     // Handle reaction operations
     if (action === 'add') {
@@ -176,14 +176,12 @@ export async function POST(
       let upsertError = null;
 
       try {
-        if (supabase.from) {
-          const result = await supabase
-            .from('reactions')
-            .upsert(reactionRecord)
-            .select();
-          
-          upsertError = result.error;
-        }
+        const result = await (supabase as any)
+          .from('reactions')
+          .upsert(reactionRecord)
+          .select();
+        
+        upsertError = result.error;
       } catch (err) {
         upsertError = err;
       }
@@ -204,15 +202,13 @@ export async function POST(
       let deleteError = null;
 
       try {
-        if (supabase.from) {
-          const result = await supabase
-            .from('reactions')
-            .delete()
-            .eq('post_id', postId)
-            .eq('user_id', user.id);
-          
-          deleteError = result.error;
-        }
+        const result = await (supabase as any)
+          .from('reactions')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', user.id);
+        
+        deleteError = result.error;
       } catch (err) {
         deleteError = err;
       }

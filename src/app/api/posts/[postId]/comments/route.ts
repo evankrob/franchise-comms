@@ -140,7 +140,7 @@ export async function POST(
       );
     }
 
-    const post = postResult;
+    const post = postResult as any;
 
     // Verify parent comment exists and belongs to the same post if provided
     if (parent_comment_id) {
@@ -173,8 +173,8 @@ export async function POST(
         );
       }
 
-      // Ensure parent comment belongs to the same post
-      if (parentCommentResult.post_id !== postId) {
+      // Ensure parent comment belongs to the same post  
+      if ((parentCommentResult as any).post_id !== postId) {
         return NextResponse.json(
           {
             error: 'Bad Request',
@@ -199,11 +199,10 @@ export async function POST(
     let commentError = null;
 
     try {
-      if (supabase.from) {
-        const result = await supabase
-          .from('comments')
-          .insert(commentRecord)
-          .select(`
+      const result = await (supabase as any)
+        .from('comments')
+        .insert(commentRecord)
+        .select(`
             id,
             tenant_id,
             post_id,
@@ -215,9 +214,8 @@ export async function POST(
             author:profiles!author_user_id(id, email, name)
           `);
         
-        commentResult = result.data?.[0];
-        commentError = result.error;
-      }
+      commentResult = result.data?.[0];
+      commentError = result.error;
     } catch (error) {
       commentError = error;
     }

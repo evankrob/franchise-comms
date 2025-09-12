@@ -103,7 +103,8 @@ export async function GET(
     // Handle database query error (500) vs not found/access denied (404)
     if (attachmentError) {
       // Check if it's a genuine database error vs. not found/access denied
-      if (attachmentError.message?.includes('service') || attachmentError.message?.includes('connection') || attachmentError.message?.includes('timeout')) {
+      const errorMessage = attachmentError && typeof attachmentError === 'object' && 'message' in attachmentError ? (attachmentError as { message: string }).message : '';
+      if (errorMessage.includes('service') || errorMessage.includes('connection') || errorMessage.includes('timeout')) {
         console.error('Database query error:', attachmentError);
         return NextResponse.json(
           {
@@ -126,7 +127,7 @@ export async function GET(
       );
     }
 
-    const attachment = attachmentResult;
+    const attachment = attachmentResult as any;
 
     // Validate virus scan status
     if (attachment.virus_scan_status === 'infected') {

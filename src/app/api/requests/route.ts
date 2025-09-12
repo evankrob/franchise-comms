@@ -105,7 +105,7 @@ export async function GET(request: NextRequest) {
 
         // Apply status filtering
         if (status) {
-          query = query.filter(`status.eq.${status}`);
+          query = (query as any).filter(`status.eq.${status}`);
         }
 
         // Order by creation date (most recent first) and execute
@@ -334,7 +334,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user is corporate staff
     const corporateRoles = ['corporate_admin', 'corporate_staff', 'corporate_manager'];
-    if (!corporateRoles.includes(membershipResult.role)) {
+    if (!corporateRoles.includes((membershipResult as any).role)) {
       return NextResponse.json(
         {
           error: 'Forbidden',
@@ -344,7 +344,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const tenantId = membershipResult.tenant?.id;
+    const tenantId = (membershipResult as any).tenant?.id;
     if (!tenantId) {
       return NextResponse.json(
         {
@@ -387,10 +387,10 @@ export async function POST(request: NextRequest) {
 
     // Calculate completion stats based on post targeting
     let totalLocations = 0;
-    if (postResult.targeting) {
-      if (postResult.targeting.type === 'locations' && postResult.targeting.location_ids) {
-        totalLocations = postResult.targeting.location_ids.length;
-      } else if (postResult.targeting.type === 'global') {
+    if ((postResult as any).targeting) {
+      if ((postResult as any).targeting.type === 'locations' && (postResult as any).targeting.location_ids) {
+        totalLocations = (postResult as any).targeting.location_ids.length;
+      } else if ((postResult as any).targeting.type === 'global') {
         // For global targeting, assume a default number or query from locations table
         totalLocations = 10; // Default value for mock/test scenarios
       }
@@ -419,15 +419,13 @@ export async function POST(request: NextRequest) {
     };
 
     try {
-      if (supabase.from) {
-        const result = await supabase
-          .from('requests')
-          .insert(requestRecord)
-          .select();
-        
-        createResult = result.data?.[0];
-        createError = result.error;
-      }
+      const result = await (supabase as any)
+        .from('requests')
+        .insert(requestRecord)
+        .select();
+      
+      createResult = result.data?.[0];
+      createError = result.error;
     } catch (error) {
       createError = error;
     }

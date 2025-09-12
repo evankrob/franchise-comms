@@ -87,7 +87,7 @@ export async function GET() {
     }
 
     // Extract tenant data from membership result
-    const tenant = membershipResult.tenant;
+    const tenant = (membershipResult as any).tenant;
     
     if (!tenant) {
       return NextResponse.json(

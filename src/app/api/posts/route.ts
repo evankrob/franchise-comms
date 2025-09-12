@@ -367,10 +367,9 @@ export async function POST(request: NextRequest) {
     };
 
     try {
-      if (supabase.from) {
-        const result = await supabase
-          .from('posts')
-          .insert(postRecord)
+      const result = await (supabase as any)
+        .from('posts')
+        .insert(postRecord)
           .select(`
             *,
             author:users!author_user_id(
@@ -381,9 +380,8 @@ export async function POST(request: NextRequest) {
           `)
           .single();
         
-        createResult = result.data;
-        createError = result.error;
-      }
+      createResult = result.data;
+      createError = result.error;
     } catch (error) {
       createError = error;
     }
