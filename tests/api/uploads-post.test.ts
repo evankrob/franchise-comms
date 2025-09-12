@@ -1109,8 +1109,8 @@ describe('Contract Test: POST /api/uploads', () => {
       // Validate nullable fields
       expect(body.post_id === null || typeof body.post_id === 'string').toBe(true);
       expect(body.comment_id === null || typeof body.comment_id === 'string').toBe(true);
-      if (body.post_id) expect(body.post_id).toMatch(/^[0-9a-f-]{36}$/i);
-      if (body.comment_id) expect(body.comment_id).toMatch(/^[0-9a-f-]{36}$/i);
+      if (body.post_id) {expect(body.post_id).toMatch(/^[0-9a-f-]{36}$/i);}
+      if (body.comment_id) {expect(body.comment_id).toMatch(/^[0-9a-f-]{36}$/i);}
       
       // No unexpected fields should be present
       const expectedKeys = [

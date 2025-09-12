@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
     let requestData;
     try {
       requestData = await request.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: 'Bad Request',
@@ -345,7 +345,7 @@ export async function POST(request: NextRequest) {
             );
           }
         }
-      } catch (error) {
+      } catch {
         // For test scenarios where location table doesn't exist, allow the post
         // In production, this would be a proper access control check
       }

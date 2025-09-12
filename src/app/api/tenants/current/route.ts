@@ -1,5 +1,5 @@
 import { createSupabaseServerClient } from '@/lib/supabase-server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/tenants/current
@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * - 404: User has no tenant memberships
  * - 403: User membership is suspended/inactive
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Create Supabase client with server-side authentication
     const supabase = await createSupabaseServerClient();

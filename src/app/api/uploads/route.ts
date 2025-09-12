@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     let formData;
     try {
       formData = await request.formData();
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: 'Bad Request',
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
         }
 
         tenantId = postResult.data.tenant_id;
-      } catch (error) {
+      } catch {
         return NextResponse.json(
           {
             error: 'Not Found',
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
         }
 
         tenantId = commentResult.data.tenant_id;
-      } catch (error) {
+      } catch {
         return NextResponse.json(
           {
             error: 'Not Found',
@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
         if (membershipResult.data?.tenant) {
           tenantId = (membershipResult.data.tenant as any).id;
         }
-      } catch (error) {
+      } catch {
         // Continue without tenant_id - let RLS handle it
       }
     }
