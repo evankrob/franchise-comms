@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        tenantId = postResult.data.tenant_id;
+        tenantId = (postResult as any).data.tenant_id;
       } catch {
         return NextResponse.json(
           {
@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        tenantId = commentResult.data.tenant_id;
+        tenantId = (commentResult as any).data.tenant_id;
       } catch {
         return NextResponse.json(
           {
@@ -230,8 +230,8 @@ export async function POST(request: NextRequest) {
           .eq('status', 'active')
           .single();
 
-        if (membershipResult.data?.tenant) {
-          tenantId = (membershipResult.data.tenant as any).id;
+        if ((membershipResult as any).data?.tenant) {
+          tenantId = ((membershipResult as any).data.tenant as any).id;
         }
       } catch {
         // Continue without tenant_id - let RLS handle it
