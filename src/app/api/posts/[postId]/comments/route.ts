@@ -76,7 +76,7 @@ export async function POST(
     let requestBody;
     try {
       requestBody = await request.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: 'Bad Request',

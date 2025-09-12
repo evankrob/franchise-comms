@@ -85,8 +85,8 @@ export async function POST(
         postResult = result.data;
         postError = result.error;
       }
-    } catch (error) {
-      postError = error;
+    } catch (err) {
+      postError = err;
     }
 
     // Handle post not found or access denied
@@ -110,7 +110,6 @@ export async function POST(
       read_at: new Date().toISOString(),
     };
 
-    let upsertResult = null;
     let upsertError = null;
 
     try {
@@ -120,11 +119,10 @@ export async function POST(
           .upsert(readReceiptRecord)
           .select();
         
-        upsertResult = result.data;
         upsertError = result.error;
       }
-    } catch (error) {
-      upsertError = error;
+    } catch (err) {
+      upsertError = err;
     }
 
     // Handle upsert error
@@ -146,8 +144,8 @@ export async function POST(
       status: 200 
     });
 
-  } catch (error) {
-    console.error('Error in POST /api/posts/[postId]/read:', error);
+  } catch (err) {
+    console.error('Error in POST /api/posts/[postId]/read:', err);
     return NextResponse.json(
       {
         error: 'Internal Server Error',

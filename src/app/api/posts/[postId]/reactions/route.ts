@@ -173,7 +173,6 @@ export async function POST(
         type: type,
       };
 
-      let upsertResult = null;
       let upsertError = null;
 
       try {
@@ -183,7 +182,6 @@ export async function POST(
             .upsert(reactionRecord)
             .select();
           
-          upsertResult = result.data;
           upsertError = result.error;
         }
       } catch (err) {
@@ -203,7 +201,6 @@ export async function POST(
       }
     } else if (action === 'remove') {
       // Remove reaction (idempotent - doesn't error if reaction doesn't exist)
-      let deleteResult = null;
       let deleteError = null;
 
       try {
@@ -214,7 +211,6 @@ export async function POST(
             .eq('post_id', postId)
             .eq('user_id', user.id);
           
-          deleteResult = result.data;
           deleteError = result.error;
         }
       } catch (err) {
