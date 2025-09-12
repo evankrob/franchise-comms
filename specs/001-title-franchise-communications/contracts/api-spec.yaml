@@ -1,0 +1,843 @@
+openapi: 3.0.3
+info:
+  title: Franchise Communications Platform API
+  description: Multi-tenant communication platform for corporate franchises
+  version: 1.0.0
+
+servers:
+  - url: https://franchise-comms.vercel.app/api
+    description: Production API
+  - url: http://localhost:3000/api
+    description: Development API
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+    User:
+      type: object
+      required: [id, email, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        avatar_url:
+          type: string
+          format: uri
+        created_at:
+          type: string
+          format: date-time
+
+    Tenant:
+      type: object
+      required: [id, name, slug]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        slug:
+          type: string
+        current_plan:
+          type: string
+          enum: [starter, growth, enterprise]
+        status:
+          type: string
+          enum: [active, suspended, cancelled]
+        settings:
+          type: object
+
+    Location:
+      type: object
+      required: [id, tenant_id, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [active, inactive]
+
+    Post:
+      type: object
+      required: [id, tenant_id, author_user_id, body, post_type, targeting]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        author_user_id:
+          type: string
+          format: uuid
+        author:
+          $ref: '#/components/schemas/User'
+        title:
+          type: string
+          maxLength: 500
+        body:
+          type: string
+        body_rich:
+          type: object
+        post_type:
+          type: string
+          enum: [message, announcement, request, performance_update]
+        targeting:
+          type: object
+          oneOf:
+            - type: object
+              properties:
+                type:
+                  type: string
+                  enum: [global]
+            - type: object
+              properties:
+                type:
+                  type: string
+                  enum: [locations]
+                location_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+        status:
+          type: string
+          enum: [draft, published, archived]
+        due_date:
+          type: string
+          format: date-time
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Comment:
+      type: object
+      required: [id, tenant_id, post_id, author_user_id, body]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        post_id:
+          type: string
+          format: uuid
+        parent_comment_id:
+          type: string
+          format: uuid
+        author_user_id:
+          type: string
+          format: uuid
+        author:
+          $ref: '#/components/schemas/User'
+        body:
+          type: string
+        body_rich:
+          type: object
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+        created_at:
+          type: string
+          format: date-time
+
+    Attachment:
+      type: object
+      required: [id, tenant_id, filename, file_size, mime_type]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        post_id:
+          type: string
+          format: uuid
+        comment_id:
+          type: string
+          format: uuid
+        filename:
+          type: string
+        original_filename:
+          type: string
+        file_size:
+          type: integer
+          format: int64
+        mime_type:
+          type: string
+        download_url:
+          type: string
+          format: uri
+        virus_scan_status:
+          type: string
+          enum: [pending, clean, infected]
+        created_at:
+          type: string
+          format: date-time
+
+    Request:
+      type: object
+      required: [id, tenant_id, post_id, title, fields]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        post_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        fields:
+          type: array
+          items:
+            type: object
+            required: [name, type, required]
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+                enum: [text, number, date, file, select]
+              required:
+                type: boolean
+              options:
+                type: array
+                items:
+                  type: string
+        due_date:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [active, closed]
+        completion_stats:
+          type: object
+          properties:
+            total_locations:
+              type: integer
+            submitted:
+              type: integer
+            pending:
+              type: integer
+            overdue:
+              type: integer
+
+    Report:
+      type: object
+      required: [id, tenant_id, request_id, location_id, submitter_user_id, field_data]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        request_id:
+          type: string
+          format: uuid
+        location_id:
+          type: string
+          format: uuid
+        location:
+          $ref: '#/components/schemas/Location'
+        submitter_user_id:
+          type: string
+          format: uuid
+        submitter:
+          $ref: '#/components/schemas/User'
+        field_data:
+          type: object
+        status:
+          type: string
+          enum: [draft, submitted, reviewed]
+        submitted_at:
+          type: string
+          format: date-time
+        reviewed_at:
+          type: string
+          format: date-time
+        reviewer_user_id:
+          type: string
+          format: uuid
+        review_notes:
+          type: string
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/me:
+    get:
+      summary: Get current user profile
+      tags: [Authentication]
+      responses:
+        '200':
+          description: Current user profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+
+  /tenants/current:
+    get:
+      summary: Get current tenant information
+      tags: [Tenants]
+      responses:
+        '200':
+          description: Current tenant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+
+  /locations:
+    get:
+      summary: List locations for current tenant
+      tags: [Locations]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive]
+      responses:
+        '200':
+          description: List of locations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Location'
+
+  /posts:
+    get:
+      summary: Get posts feed
+      tags: [Posts]
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [message, announcement, request, performance_update]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Posts feed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+                  pagination:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      limit:
+                        type: integer
+                      offset:
+                        type: integer
+                      has_more:
+                        type: boolean
+
+    post:
+      summary: Create a new post
+      tags: [Posts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body, post_type, targeting]
+              properties:
+                title:
+                  type: string
+                  maxLength: 500
+                body:
+                  type: string
+                body_rich:
+                  type: object
+                post_type:
+                  type: string
+                  enum: [message, announcement, request, performance_update]
+                targeting:
+                  type: object
+                due_date:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Post created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /posts/{postId}:
+    get:
+      summary: Get a specific post
+      tags: [Posts]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+
+    patch:
+      summary: Update a post
+      tags: [Posts]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                body:
+                  type: string
+                body_rich:
+                  type: object
+                status:
+                  type: string
+                  enum: [draft, published, archived]
+      responses:
+        '200':
+          description: Post updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+  /posts/{postId}/comments:
+    get:
+      summary: Get comments for a post
+      tags: [Comments]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Post comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+
+    post:
+      summary: Create a comment on a post
+      tags: [Comments]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [body]
+              properties:
+                body:
+                  type: string
+                body_rich:
+                  type: object
+                parent_comment_id:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+  /posts/{postId}/read:
+    post:
+      summary: Mark post as read
+      tags: [Posts]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post marked as read
+
+  /posts/{postId}/reactions:
+    post:
+      summary: Add/remove reaction to a post
+      tags: [Posts]
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, action]
+              properties:
+                type:
+                  type: string
+                  enum: [like, acknowledge, needs_attention]
+                action:
+                  type: string
+                  enum: [add, remove]
+      responses:
+        '200':
+          description: Reaction updated
+
+  /uploads:
+    post:
+      summary: Upload file attachment
+      tags: [Attachments]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                post_id:
+                  type: string
+                  format: uuid
+                comment_id:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+        '413':
+          description: File too large
+
+  /attachments/{attachmentId}/download:
+    get:
+      summary: Download attachment
+      tags: [Attachments]
+      parameters:
+        - name: attachmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '302':
+          description: Redirect to download URL
+        '404':
+          description: Attachment not found
+
+  /requests:
+    get:
+      summary: List requests for current user's context
+      tags: [Requests]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, closed]
+        - name: role
+          in: query
+          description: Filter by user role context
+          schema:
+            type: string
+            enum: [created, assigned]
+      responses:
+        '200':
+          description: List of requests
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Request'
+
+    post:
+      summary: Create a new request (Corporate staff only)
+      tags: [Requests]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [post_id, title, fields]
+              properties:
+                post_id:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
+                description:
+                  type: string
+                fields:
+                  type: array
+                  items:
+                    type: object
+                due_date:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+
+  /requests/{requestId}/reports:
+    get:
+      summary: Get reports for a request
+      tags: [Reports]
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, submitted, reviewed]
+      responses:
+        '200':
+          description: Request reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Report'
+
+    post:
+      summary: Submit report for request
+      tags: [Reports]
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [location_id, field_data]
+              properties:
+                location_id:
+                  type: string
+                  format: uuid
+                field_data:
+                  type: object
+                status:
+                  type: string
+                  enum: [draft, submitted]
+                  default: submitted
+      responses:
+        '201':
+          description: Report submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+
+  /search:
+    get:
+      summary: Search across posts and comments
+      tags: [Search]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [posts, comments, all]
+            default: all
+        - name: location_ids
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      posts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Post'
+                      comments:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Comment'
+                  total:
+                    type: integer
