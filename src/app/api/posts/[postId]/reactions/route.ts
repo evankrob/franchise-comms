@@ -75,7 +75,7 @@ export async function POST(
     let requestBody;
     try {
       requestBody = await request.json();
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         {
           error: 'Bad Request',
@@ -146,8 +146,8 @@ export async function POST(
         postResult = result.data;
         postError = result.error;
       }
-    } catch (error) {
-      postError = error;
+    } catch (err) {
+      postError = err;
     }
 
     // Handle post not found or access denied
@@ -186,8 +186,8 @@ export async function POST(
           upsertResult = result.data;
           upsertError = result.error;
         }
-      } catch (error) {
-        upsertError = error;
+      } catch (err) {
+        upsertError = err;
       }
 
       // Handle upsert error
@@ -217,8 +217,8 @@ export async function POST(
           deleteResult = result.data;
           deleteError = result.error;
         }
-      } catch (error) {
-        deleteError = error;
+      } catch (err) {
+        deleteError = err;
       }
 
       // Handle delete error
@@ -241,8 +241,8 @@ export async function POST(
       status: 200 
     });
 
-  } catch (error) {
-    console.error('Error in POST /api/posts/[postId]/reactions:', error);
+  } catch (err) {
+    console.error('Error in POST /api/posts/[postId]/reactions:', err);
     return NextResponse.json(
       {
         error: 'Internal Server Error',

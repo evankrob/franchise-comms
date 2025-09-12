@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * - 200: User profile data
  * - 401: Unauthorized (no valid session)
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Create Supabase client with server-side authentication
     const supabase = await createSupabaseServerClient();
@@ -58,9 +58,9 @@ export async function GET(request: NextRequest) {
         dbUser = result.data;
         dbError = result.error;
       }
-    } catch (error) {
+    } catch (err) {
       // Database query failed, will fall back to auth metadata
-      dbError = error;
+      dbError = err;
     }
 
     // If database query fails, fall back to auth user metadata
@@ -79,8 +79,8 @@ export async function GET(request: NextRequest) {
 
     // Return the database user data (most up-to-date)
     return NextResponse.json(dbUser, { status: 200 });
-  } catch (error) {
-    console.error('Error in GET /api/auth/me:', error);
+  } catch (err) {
+    console.error('Error in GET /api/auth/me:', err);
     return NextResponse.json(
       {
         error: 'Internal Server Error',

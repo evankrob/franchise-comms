@@ -96,8 +96,8 @@ export async function GET(
         attachmentResult = result.data;
         attachmentError = result.error;
       }
-    } catch (error) {
-      attachmentError = error;
+    } catch (err) {
+      attachmentError = err;
     }
 
     // Handle database query error (500) vs not found/access denied (404)
@@ -186,7 +186,7 @@ export async function GET(
             { status: 403 }
           );
         }
-      } catch (error) {
+      } catch {
         return NextResponse.json(
           {
             error: 'Forbidden',
@@ -214,7 +214,7 @@ export async function GET(
             { status: 403 }
           );
         }
-      } catch (error) {
+      } catch {
         return NextResponse.json(
           {
             error: 'Forbidden',
@@ -241,8 +241,8 @@ export async function GET(
         }
         signedUrlError = result?.error;
       }
-    } catch (error) {
-      signedUrlError = error;
+    } catch (err) {
+      signedUrlError = err;
     }
 
     // Handle signed URL generation error
@@ -259,8 +259,8 @@ export async function GET(
 
     // Return 302 redirect to signed URL
     return NextResponse.redirect(signedUrl, 302);
-  } catch (error) {
-    console.error('Error in GET /api/attachments/[attachmentId]/download:', error);
+  } catch (err) {
+    console.error('Error in GET /api/attachments/[attachmentId]/download:', err);
     return NextResponse.json(
       {
         error: 'Internal Server Error',

@@ -151,9 +151,15 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 -- Create storage bucket for file attachments
-INSERT INTO storage.buckets (id, name, public) VALUES ('attachments', 'attachments', false);
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('attachments', 'attachments', false)
+ON CONFLICT (id) DO NOTHING;
 
--- Storage policies
+-- Storage policies (drop existing policies first, then recreate)
+DROP POLICY IF EXISTS "Users can upload files to their tenant folder" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view files in their tenant" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete their own files" ON storage.objects;
+
 CREATE POLICY "Users can upload files to their tenant folder" ON storage.objects
   FOR INSERT WITH CHECK (
     bucket_id = 'attachments' AND

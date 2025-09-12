@@ -40,7 +40,7 @@ const eslintConfig = [
       'react/no-unescaped-entities': 'error',
 
       // Security rules for multi-tenant platform
-      'no-console': 'warn', // Use proper logging instead
+      'no-console': ['warn', { allow: ['error'] }], // Allow console.error for debugging
       'no-debugger': 'error',
       'no-eval': 'error',
       'no-implied-eval': 'error',
