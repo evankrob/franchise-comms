@@ -18,7 +18,7 @@ export default function TenantDashboard({ params }: { params: { slug: string } }
                 🎉 Setup Complete!
               </h3>
               <p className="text-blue-700">
-                Your organization has been successfully created and you've been set up as the admin.
+                Your organization has been successfully created and you&apos;ve been set up as the admin.
               </p>
             </div>
 
