@@ -11,19 +11,45 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     
     if (!error) {
+      // Get the current user to ensure session is established
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        return NextResponse.redirect(`${origin}/onboarding`);
+      }
+
       // Get user's tenant membership to redirect appropriately
-      const { data: memberships } = await supabase
+      const { data: memberships, error: membershipError } = await supabase
         .from('memberships')
-        .select('tenant:tenants(slug)')
+        .select(`
+          tenant_id,
+          role,
+          status,
+          tenant:tenants!inner(
+            id,
+            slug,
+            name
+          )
+        `)
+        .eq('user_id', user.id)
         .eq('status', 'active')
         .limit(1);
 
+      // If there's an error or no memberships, send to onboarding
+      if (membershipError) {
+        console.error('Error fetching memberships:', membershipError);
+        return NextResponse.redirect(`${origin}/onboarding`);
+      }
+
       if (memberships && memberships.length > 0 && memberships[0]) {
-        const tenantSlug = (memberships[0] as any).tenant?.slug;
+        const membership = memberships[0];
+        const tenantSlug = (membership.tenant as any)?.slug;
         if (tenantSlug) {
           return NextResponse.redirect(`${origin}/tenant/${tenantSlug}/dashboard`);
         }
       }
+      
+      // No active memberships found, send to onboarding
       return NextResponse.redirect(`${origin}/onboarding`);
     }
   }

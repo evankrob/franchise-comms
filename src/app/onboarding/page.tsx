@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
@@ -12,8 +12,32 @@ export default function OnboardingPage() {
   const [tenantName, setTenantName] = useState('');
   const [tenantSlug, setTenantSlug] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Check if user already has a tenant on page load
+  useEffect(() => {
+    const checkExistingTenant = async () => {
+      try {
+        const response = await fetch('/api/tenants/current');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.data && result.data.slug) {
+            // User already has a tenant, redirect to dashboard
+            router.push(`/tenant/${result.data.slug}/dashboard`);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking existing tenant:', error);
+      } finally {
+        setCheckingExisting(false);
+      }
+    };
+
+    checkExistingTenant();
+  }, [router]);
 
   const generateSlug = (name: string) => {
     return name
@@ -63,6 +87,18 @@ export default function OnboardingPage() {
       setLoading(false);
     }
   };
+
+  // Show loading spinner while checking for existing tenant
+  if (checkingExisting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Checking your account...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
