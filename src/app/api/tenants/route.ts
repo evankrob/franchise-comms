@@ -93,7 +93,6 @@ export async function POST(request: NextRequest) {
     }
     
     const adminSupabase = createSupabaseAdminClient();
-    console.log('Using admin client for tenant creation');
     
     // Create the tenant using admin client
     const { data: tenant, error: tenantError } = await adminSupabase
