@@ -89,6 +89,11 @@ CREATE POLICY "Tenant admins can update their tenant" ON tenants
     )
   );
 
+CREATE POLICY "Authenticated users can create tenants" ON tenants
+  FOR INSERT WITH CHECK (
+    current_user_id() IS NOT NULL
+  );
+
 -- USERS RLS POLICIES
 CREATE POLICY "Users can view their own profile" ON users
   FOR SELECT USING (id = current_user_id());
@@ -123,6 +128,11 @@ CREATE POLICY "Tenant admins can manage memberships" ON memberships
       AND role = 'tenant_admin' 
       AND status = 'active'
     )
+  );
+
+CREATE POLICY "Users can create their own memberships" ON memberships
+  FOR INSERT WITH CHECK (
+    user_id = current_user_id()
   );
 
 -- LOCATIONS RLS POLICIES
