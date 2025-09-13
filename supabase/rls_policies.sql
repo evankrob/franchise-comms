@@ -16,10 +16,7 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 -- Helper functions for RLS policies
 CREATE OR REPLACE FUNCTION current_user_id()
 RETURNS UUID AS $$
-  SELECT COALESCE(
-    NULLIF(current_setting('request.jwt.claims', true)::json->>'sub', ''),
-    (NULLIF(current_setting('request.jwt.claims', true)::json->>'role', '') = 'service_role')::text
-  )::uuid;
+  SELECT auth.uid();
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
 
 CREATE OR REPLACE FUNCTION is_user_in_tenant(tenant_uuid UUID)
@@ -91,7 +88,7 @@ CREATE POLICY "Tenant admins can update their tenant" ON tenants
 
 CREATE POLICY "Authenticated users can create tenants" ON tenants
   FOR INSERT WITH CHECK (
-    current_user_id() IS NOT NULL
+    auth.uid() IS NOT NULL
   );
 
 -- USERS RLS POLICIES
@@ -132,7 +129,7 @@ CREATE POLICY "Tenant admins can manage memberships" ON memberships
 
 CREATE POLICY "Users can create their own memberships" ON memberships
   FOR INSERT WITH CHECK (
-    user_id = current_user_id()
+    user_id = auth.uid()
   );
 
 -- LOCATIONS RLS POLICIES
