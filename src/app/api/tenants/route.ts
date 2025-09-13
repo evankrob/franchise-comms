@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     const adminSupabase = createSupabaseAdminClient();
     
     // Create the tenant using admin client
-    const { data: tenant, error: tenantError } = await adminSupabase
+    const { data: tenant, error: tenantError } = await (adminSupabase as any)
       .from('tenants')
       .insert({
         name: name.trim(),
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create membership for the user as tenant admin using admin client
-    const { error: membershipError } = await adminSupabase
+    const { error: membershipError } = await (adminSupabase as any)
       .from('memberships')
       .insert({
         user_id: user.id,
