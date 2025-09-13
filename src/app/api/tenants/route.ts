@@ -79,7 +79,21 @@ export async function POST(request: NextRequest) {
 
     // Use admin client for tenant creation to bypass RLS issues
     // This is safe because we've already verified the user is authenticated
+    
+    // Check if service role key is available
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('SUPABASE_SERVICE_ROLE_KEY is not configured');
+      return NextResponse.json(
+        {
+          error: 'Internal Server Error',
+          message: 'Service configuration error',
+        },
+        { status: 500 }
+      );
+    }
+    
     const adminSupabase = createSupabaseAdminClient();
+    console.log('Using admin client for tenant creation');
     
     // Create the tenant using admin client
     const { data: tenant, error: tenantError } = await adminSupabase
