@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
     let tenantId: string | null = null;
 
     // Validate post access if post_id provided
-    if (postId && supabase.from) {
+    if (postId) {
       try {
         const postResult = await supabase
           .from('posts')
@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate comment access if comment_id provided
-    if (commentId && supabase.from) {
+    if (commentId) {
       try {
         const commentResult = await supabase
           .from('comments')
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get tenant_id from user membership if not already set
-    if (!tenantId && supabase.from) {
+    if (!tenantId) {
       try {
         const membershipResult = await supabase
           .from('memberships')
@@ -248,18 +248,16 @@ export async function POST(request: NextRequest) {
     let uploadError = null;
 
     try {
-      if (supabase.storage) {
-        const fileBuffer = await file.arrayBuffer();
-        const result = await supabase.storage
-          .from('attachments')
-          .upload(storagePath, fileBuffer, {
-            contentType: file.type,
-            duplex: 'half' as any,
-          });
+      const fileBuffer = await file.arrayBuffer();
+      const result = await supabase.storage
+        .from('attachments')
+        .upload(storagePath, fileBuffer, {
+          contentType: file.type,
+          duplex: 'half' as any,
+        });
 
-        uploadResult = result.data;
-        uploadError = result.error;
-      }
+      uploadResult = result.data;
+      uploadError = result.error;
     } catch (error) {
       uploadError = error;
     }
@@ -279,12 +277,10 @@ export async function POST(request: NextRequest) {
     // Get download URL
     let downloadUrl = '';
     try {
-      if (supabase.storage) {
-        const { data } = supabase.storage
-          .from('attachments')
-          .getPublicUrl(storagePath);
-        downloadUrl = data.publicUrl;
-      }
+      const { data } = supabase.storage
+        .from('attachments')
+        .getPublicUrl(storagePath);
+      downloadUrl = data.publicUrl;
     } catch (error) {
       console.error('Error getting download URL:', error);
     }
@@ -306,15 +302,13 @@ export async function POST(request: NextRequest) {
     };
 
     try {
-      if (supabase.from) {
-        const result = await (supabase as any)
-          .from('attachments')
-          .insert(attachmentRecord)
-          .select();
-        
-        createResult = result.data?.[0];
-        createError = result.error;
-      }
+      const result = await (supabase as any)
+        .from('attachments')
+        .insert(attachmentRecord)
+        .select();
+      
+      createResult = result.data?.[0];
+      createError = result.error;
     } catch (error) {
       createError = error;
     }
