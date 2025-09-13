@@ -282,7 +282,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has permission to create locations (tenant_admin or franchise_owner)
-    if (!['tenant_admin', 'franchise_owner'].includes(membership.role)) {
+    const userRole = (membership as any).role;
+    if (!['tenant_admin', 'franchise_owner'].includes(userRole)) {
       return NextResponse.json(
         {
           error: 'Forbidden',
@@ -297,7 +298,7 @@ export async function POST(request: NextRequest) {
       .from('locations')
       .insert([
         {
-          tenant_id: membership.tenant_id,
+          tenant_id: (membership as any).tenant_id,
           name: name.trim(),
           address: address.trim(),
           city: city.trim(),
