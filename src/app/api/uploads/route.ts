@@ -307,7 +307,7 @@ export async function POST(request: NextRequest) {
 
     try {
       if (supabase.from) {
-        const result = await supabase
+        const result = await (supabase as any)
           .from('attachments')
           .insert(attachmentRecord)
           .select();
