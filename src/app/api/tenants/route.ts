@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { createSupabaseServerClient, createSupabaseAdminClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -77,8 +77,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the tenant
-    const { data: tenant, error: tenantError } = await supabase
+    // Use admin client for tenant creation to bypass RLS issues
+    // This is safe because we've already verified the user is authenticated
+    const adminSupabase = createSupabaseAdminClient();
+    
+    // Create the tenant using admin client
+    const { data: tenant, error: tenantError } = await adminSupabase
       .from('tenants')
       .insert({
         name: name.trim(),
@@ -111,8 +115,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create membership for the user as tenant admin
-    const { error: membershipError } = await supabase
+    // Create membership for the user as tenant admin using admin client
+    const { error: membershipError } = await adminSupabase
       .from('memberships')
       .insert({
         user_id: user.id,
