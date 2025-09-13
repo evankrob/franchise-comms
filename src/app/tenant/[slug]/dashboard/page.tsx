@@ -183,6 +183,7 @@ export default function TenantDashboard({ params }: { params: { slug: string } }
               </Link>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </div>
