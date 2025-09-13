@@ -39,45 +39,22 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setError('You must be logged in to create a tenant');
-        return;
-      }
-
-      // Create the tenant
-      const { data: tenant, error: tenantError } = await (supabase as any)
-        .from('tenants')
-        .insert({
+      // Call the API route to create tenant and membership
+      const response = await fetch('/api/tenants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           name: tenantName,
           slug: tenantSlug,
-          status: 'trial',
-        })
-        .select()
-        .single();
+        }),
+      });
 
-      if (tenantError) {
-        if (tenantError.code === '23505') {
-          setError('This name is already taken. Please choose a different name.');
-        } else {
-          setError(tenantError.message);
-        }
-        return;
-      }
+      const data = await response.json();
 
-      // Create membership for the user as tenant admin
-      const { error: membershipError } = await (supabase as any)
-        .from('memberships')
-        .insert({
-          user_id: user.id,
-          tenant_id: tenant.id,
-          role: 'tenant_admin',
-          status: 'active',
-        });
-
-      if (membershipError) {
-        setError(membershipError.message);
+      if (!response.ok) {
+        setError(data.message || 'Failed to create organization');
         return;
       }
 
